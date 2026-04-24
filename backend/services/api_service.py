@@ -53,64 +53,28 @@ MOCK_JOBS = [
 
 
 def _parse_job_item(item: dict) -> JobCreate | None:
-    """Parse a single SerpAPI job result into a JobCreate schema."""
+    """Parse a single Adzuna job result into a JobCreate schema."""
     job_title = item.get("title", "Unknown Title")
-    company = item.get("company_name", "Unknown Company")
+    company_data = item.get("company", {})
+    company = company_data.get("display_name", "Confidential")
     
-    # 1. Skip aggregator lists (e.g., "1,504 Data analyst remote jobs in India")
-    title_l = job_title.lower()
-    if any(x in title_l for x in [" jobs in ", " jobs remote", " jobs - "]) and any(char.isdigit() for char in title_l[:4]):
-        return None
+    location_data = item.get("location", {})
+    location = location_data.get("display_name", "Unknown")
+    
+    apply_link = item.get("redirect_url")
+    if not apply_link:
+        return None  # Skip if no link
         
-    # 2. Clean up bad company names
-    c_lower = company.lower()
-    if c_lower.startswith("jobs via "):
-        company = company[9:].strip()
-    elif c_lower == "confidential":
-        company = "Confidential"
-    elif c_lower in ["google jobs", "linkedin", "naukri", "glassdoor", "indeed", "unknown company"]:
-        # Attempt to extract from title
-        if " at " in job_title:
-            company = job_title.split(" at ")[-1].strip()
-        elif " - " in job_title:
-            company = job_title.split(" - ")[-1].strip()
-        else:
-            company = "Confidential"
+    source_portal = "Adzuna"
 
-    location = item.get("location", "Unknown")
-    apply_link = None
-    source_portal = "Google Jobs"
-
-    apply_options = item.get("apply_options", [])
-    if apply_options:
-        apply_link = apply_options[0].get("link")
-        source_portal = apply_options[0].get("title", "Google Jobs")
-
-    if not apply_link:
-        related = item.get("related_links", [])
-        if related:
-            apply_link = related[0].get("link")
-            source_portal = related[0].get("text", "Google Jobs")
-
-    if not apply_link:
-        apply_link = "https://google.com/search?q=" + job_title.replace(" ", "+")
-
-    # Parse posted_date from "X hours ago" / "X days ago"
-    posted_date = datetime.utcnow()
-    posted_str = item.get("detected_extensions", {}).get("posted_at", "")
+    # Parse posted_date from "2026-04-03T06:28:55Z"
+    posted_str = item.get("created", "")
     try:
-        if "day" in posted_str:
-            posted_date -= timedelta(days=int(posted_str.split()[0]))
-        elif "hour" in posted_str:
-            posted_date -= timedelta(hours=int(posted_str.split()[0]))
-        elif "minute" in posted_str:
-            posted_date -= timedelta(minutes=int(posted_str.split()[0]))
-        elif "week" in posted_str:
-            posted_date -= timedelta(weeks=int(posted_str.split()[0]))
-        elif "month" in posted_str:
-            posted_date -= timedelta(days=30 * int(posted_str.split()[0]))
+        if posted_str.endswith('Z'):
+            posted_str = posted_str[:-1]
+        posted_date = datetime.fromisoformat(posted_str)
     except Exception:
-        pass
+        posted_date = datetime.utcnow()
 
     return JobCreate(
         title=job_title,
@@ -123,57 +87,58 @@ def _parse_job_item(item: dict) -> JobCreate | None:
 
 
 async def fetch_jobs_from_api(
-    query: str = "QA Tester jobs India",
+    query: str = "Software Developer",
     realtime: bool = False,
-    pages: int = 3  # fetch N pages * ~10 results = up to 30 jobs per query
+    pages: int = 2  # fetch N pages * 50 results = up to 100 jobs per query
 ) -> List[JobCreate]:
-    api_key = os.getenv("SERPAPI_KEY")
-    if not api_key or api_key == "YOUR_SERPAPI_KEY":
-        logger.warning("SERPAPI_KEY not found. Using MOCK data.")
+    app_id = os.getenv("ADZUNA_APP_ID")
+    app_key = os.getenv("ADZUNA_APP_KEY")
+    
+    if not app_id or not app_key:
+        logger.warning("ADZUNA credentials not found. Using MOCK data.")
         return [JobCreate(**job) for job in MOCK_JOBS]
 
-    url = "https://serpapi.com/search.json"
+    base_url = "https://api.adzuna.com/v1/api/jobs/in/search"
     base_params = {
-        "engine": "google_jobs",
-        "q": query,
-        "api_key": api_key,
-        "hl": "en",
-        "gl": "in",
+        "app_id": app_id,
+        "app_key": app_key,
+        "results_per_page": 50,
+        "where": "Hyderabad",
+        "what": query,
+        "sort_by": "date" if realtime else "relevance"
     }
+    
     if realtime:
-        base_params["chips"] = "date_posted:today"
-        pages = 1  # for realtime smart-cache, just first page is enough
+        pages = 1  # When fetching every minute, 1 page of 50 is enough
 
     all_jobs: List[JobCreate] = []
 
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
-            for page in range(pages):
-                start_offset = page * 10
-                params = {**base_params, "start": start_offset}
-
-                logger.info(f"  Fetching page {page + 1} (start={start_offset}) for '{query}'...")
-                response = await client.get(url, params=params)
+            for page in range(1, pages + 1):
+                logger.info(f"  Fetching Adzuna page {page} for '{query}'...")
+                response = await client.get(f"{base_url}/{page}", params=base_params)
                 response.raise_for_status()
                 data = response.json()
 
-                results = data.get("jobs_results", [])
+                results = data.get("results", [])
                 if not results:
-                    logger.info(f"  No more results at page {page + 1}, stopping.")
-                    break  # stop paginating if no more results
+                    logger.info(f"  No more results at page {page}, stopping.")
+                    break
 
                 for item in results:
                     job = _parse_job_item(item)
                     if job:
                         all_jobs.append(job)
 
-                logger.info(f"  Page {page + 1}: got {len(results)} results (total so far: {len(all_jobs)})")
+                logger.info(f"  Page {page}: got {len(results)} results (total so far: {len(all_jobs)})")
 
     except Exception as e:
         import traceback
         traceback.print_exc()
-        logger.error(f"Error fetching from SerpAPI for '{query}': {e}")
+        logger.error(f"Error fetching from Adzuna API for '{query}': {e}")
         if not all_jobs:
             return [JobCreate(**job) for job in MOCK_JOBS]
 
     return all_jobs
+
