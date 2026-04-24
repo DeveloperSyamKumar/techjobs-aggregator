@@ -56,6 +56,27 @@ def _parse_job_item(item: dict) -> JobCreate | None:
     """Parse a single SerpAPI job result into a JobCreate schema."""
     job_title = item.get("title", "Unknown Title")
     company = item.get("company_name", "Unknown Company")
+    
+    # 1. Skip aggregator lists (e.g., "1,504 Data analyst remote jobs in India")
+    title_l = job_title.lower()
+    if any(x in title_l for x in [" jobs in ", " jobs remote", " jobs - "]) and any(char.isdigit() for char in title_l[:4]):
+        return None
+        
+    # 2. Clean up bad company names
+    c_lower = company.lower()
+    if c_lower.startswith("jobs via "):
+        company = company[9:].strip()
+    elif c_lower == "confidential":
+        company = "Confidential"
+    elif c_lower in ["google jobs", "linkedin", "naukri", "glassdoor", "indeed", "unknown company"]:
+        # Attempt to extract from title
+        if " at " in job_title:
+            company = job_title.split(" at ")[-1].strip()
+        elif " - " in job_title:
+            company = job_title.split(" - ")[-1].strip()
+        else:
+            company = "Confidential"
+
     location = item.get("location", "Unknown")
     apply_link = None
     source_portal = "Google Jobs"
