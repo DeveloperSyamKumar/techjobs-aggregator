@@ -67,6 +67,14 @@ def _parse_job_item(item: dict) -> JobCreate | None:
         
     source_portal = "Adzuna"
 
+    # Enhanced Walk-in Detection: Check title and description
+    description = item.get("description", "").lower()
+    t_lower = job_title.lower()
+    is_walkin = any(x in t_lower or x in description for x in ["walk-in", "walkin", "walk in", "drive"])
+    
+    if is_walkin and "walk" not in t_lower:
+        job_title = f"Walk-in: {job_title}"
+
     # Parse posted_date from "2026-04-03T06:28:55Z"
     posted_str = item.get("created", "")
     try:
@@ -89,7 +97,8 @@ def _parse_job_item(item: dict) -> JobCreate | None:
 async def fetch_jobs_from_api(
     query: str = "Software Developer",
     realtime: bool = False,
-    pages: int = 2  # fetch N pages * 50 results = up to 100 jobs per query
+    pages: int = 2,  # fetch N pages * 50 results = up to 100 jobs per query
+    location: str = "Hyderabad"
 ) -> List[JobCreate]:
     app_id = os.getenv("ADZUNA_APP_ID")
     app_key = os.getenv("ADZUNA_APP_KEY")
@@ -103,7 +112,7 @@ async def fetch_jobs_from_api(
         "app_id": app_id,
         "app_key": app_key,
         "results_per_page": 50,
-        "where": "Hyderabad",
+        "where": location,
         "what": query,
         "sort_by": "date" if realtime else "relevance"
     }

@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Depends, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -6,6 +7,7 @@ from database.database import get_db
 from schemas import job as schemas
 from services import job_service, api_service
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 @router.get("/jobs", response_model=List[schemas.JobResponse])
@@ -33,6 +35,27 @@ async def filter_jobs(
     limit: int = 100,
     db: Session = Depends(get_db)
 ):
+    # 1. Trigger Live Search if query params are present
+    if keyword or location or company:
+        search_term = keyword or company or "Software"
+        search_location = location or "Hyderabad"
+        
+        logger.info(f"Live Search triggered: what='{search_term}', where='{search_location}'")
+        
+        # Fetch from Adzuna in real-time
+        try:
+            jobs_data = await api_service.fetch_jobs_from_api(
+                query=search_term,
+                location=search_location,
+                realtime=False, # Get a broader set for manual search
+                pages=1 # Fetch first 50 results for speed
+            )
+            if jobs_data:
+                job_service.save_jobs_bulk(db, jobs_data)
+        except Exception as e:
+            logger.error(f"Live search failed: {e}")
+
+    # 2. Query the DB (now populated with fresh live results)
     jobs = job_service.fetch_jobs(
         db, 
         keyword=keyword, 
@@ -44,46 +67,6 @@ async def filter_jobs(
         limit=limit
     )
     
-    # Smart Cache Pipeline: If database yields 0 results, dynamically fetch and ingest!
-    if not jobs and (keyword or company):
-        # Build a meaningful search query from whatever the user provided
-        search_term = keyword or company
-        query_str = f"{search_term} jobs India"
-        if location:
-            query_str += f" {location}"
-
-        # For company searches: fetch multiple pages without today-only restriction
-        # so we get a broad set of jobs (company names from API may differ from user input)
-        jobs_data = await api_service.fetch_jobs_from_api(
-            query=query_str,
-            realtime=False,  # don't restrict to today — get more results
-            pages=3
-        )
-        if jobs_data:
-            job_service.save_jobs_bulk(db, jobs_data)
-            # Re-query: search keyword field (title + company) so variations like
-            # "Tata Consultancy Services" are found when user typed "tcs"
-            jobs = job_service.fetch_jobs(
-                db,
-                keyword=search_term,   # broader match across title AND company
-                location=location,
-                days_ago=days_ago,
-                source=source,
-                skip=skip,
-                limit=limit
-            )
-            # If keyword-based re-query also finds nothing, fall back to company filter
-            if not jobs and company:
-                jobs = job_service.fetch_jobs(
-                    db,
-                    company=company,
-                    location=location,
-                    days_ago=days_ago,
-                    source=source,
-                    skip=skip,
-                    limit=limit
-                )
-
     return jobs
 
 

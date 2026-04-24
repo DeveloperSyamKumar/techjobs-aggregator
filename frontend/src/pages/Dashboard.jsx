@@ -142,7 +142,7 @@ const Dashboard = () => {
 
         {/* Main Content */}
         <div className="flex-1 min-w-0 flex flex-col">
-          <div className="flex justify-between items-end mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 gap-4">
             <div>
               <h1 className="text-2xl font-bold themed-text flex items-center gap-2">
                 Latest Jobs
@@ -158,6 +158,25 @@ const Dashboard = () => {
                   <span className="ml-1 font-medium" style={{ color: '#3b82f6' }}>in {filters.location}</span>
                 )}
               </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => {
+                  const isWalkin = filters.keyword.toLowerCase().includes('walk');
+                  const newKeyword = isWalkin ? '' : 'Walk-in';
+                  setFilters(prev => ({ ...prev, keyword: newKeyword }));
+                  fetchJobsData(false, { ...filters, keyword: newKeyword });
+                }}
+                className={`px-4 py-1.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 border-2 ${
+                  (filters.keyword.toLowerCase().includes('walkin') || filters.keyword.toLowerCase().includes('walk-in') || filters.keyword.toLowerCase().includes('drive'))
+                    ? 'bg-amber-500/20 text-amber-500 border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.2)]' 
+                    : 'themed-surface themed-text themed-border hover:border-amber-500/50 hover:text-amber-500 hover:bg-amber-500/5'
+                }`}
+              >
+                <div className={`w-2 h-2 rounded-full ${(filters.keyword.toLowerCase().includes('walkin') || filters.keyword.toLowerCase().includes('walk-in') || filters.keyword.toLowerCase().includes('drive')) ? 'bg-amber-500 animate-pulse' : 'bg-current opacity-30'}`}></div>
+                Walk-in Interviews
+              </button>
             </div>
           </div>
 
@@ -192,7 +211,8 @@ const Dashboard = () => {
               {/* Walk-in Section */}
               {jobs.filter(job =>
                 job.title.toLowerCase().includes('walk-in') ||
-                job.title.toLowerCase().includes('walkin')
+                job.title.toLowerCase().includes('walkin') ||
+                job.title.toLowerCase().includes('drive')
               ).length > 0 && (
                 <section>
                   <div className="section-header">
@@ -202,13 +222,14 @@ const Dashboard = () => {
                       <span className="text-xs font-bold px-2 py-0.5 rounded-full uppercase tracking-wider" style={{ backgroundColor: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b' }}>Direct</span>
                     </div>
                     <span className="text-sm font-medium themed-text-muted">
-                      {jobs.filter(job => job.title.toLowerCase().includes('walk-in') || job.title.toLowerCase().includes('walkin')).length} Opportunities
+                      {jobs.filter(job => job.title.toLowerCase().includes('walk-in') || job.title.toLowerCase().includes('walkin') || job.title.toLowerCase().includes('drive')).length} Opportunities
                     </span>
                   </div>
                   <div className="flex flex-col gap-4">
                     {jobs.filter(job =>
                       job.title.toLowerCase().includes('walk-in') ||
-                      job.title.toLowerCase().includes('walkin')
+                      job.title.toLowerCase().includes('walkin') ||
+                      job.title.toLowerCase().includes('drive')
                     ).map((job) => (
                       <JobCard key={job.id} job={job} />
                     ))}
@@ -228,11 +249,13 @@ const Dashboard = () => {
                 <div className="flex flex-col gap-4">
                   {jobs.filter(job =>
                     !job.title.toLowerCase().includes('walk-in') &&
-                    !job.title.toLowerCase().includes('walkin')
+                    !job.title.toLowerCase().includes('walkin') &&
+                    !job.title.toLowerCase().includes('drive')
                   ).length > 0 ? (
                     jobs.filter(job =>
                       !job.title.toLowerCase().includes('walk-in') &&
-                      !job.title.toLowerCase().includes('walkin')
+                      !job.title.toLowerCase().includes('walkin') &&
+                      !job.title.toLowerCase().includes('drive')
                     ).map((job) => (
                       <JobCard key={job.id} job={job} />
                     ))

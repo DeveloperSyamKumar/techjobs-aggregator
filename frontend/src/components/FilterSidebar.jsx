@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Filter, X, Search, Building2 } from 'lucide-react';
+import { Filter, X, Search, Building2, Sparkles } from 'lucide-react';
 
 const FilterSidebar = ({ filters, setFilters, onFilterSubmit }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -100,6 +100,35 @@ const FilterSidebar = ({ filters, setFilters, onFilterSubmit }) => {
           </select>
         </div>
 
+        {/* Walk-in Toggle */}
+        <div className="pt-2">
+          <label className="flex items-center justify-between p-3 rounded-xl border-2 transition-all duration-300 cursor-pointer group themed-surface-alt border-transparent hover:border-amber-500/30">
+            <span className="text-sm font-bold themed-text group-hover:text-amber-500 transition-colors flex items-center gap-2">
+              <Sparkles size={16} className="text-amber-500" /> Walk-in Jobs
+            </span>
+            <div className="relative">
+              <input
+                type="checkbox"
+                className="sr-only"
+                checked={filters.keyword.toLowerCase().includes('walkin') || filters.keyword.toLowerCase().includes('walk-in')}
+                onChange={(e) => {
+                  const isChecked = e.target.checked;
+                  setFilters(prev => ({ 
+                    ...prev, 
+                    keyword: isChecked ? 'Walk-in Interview' : (prev.keyword.toLowerCase().includes('walk') ? '' : prev.keyword)
+                  }));
+                }}
+              />
+              <div className={`w-11 h-6 rounded-full shadow-inner transition-colors duration-200 ${
+                (filters.keyword.toLowerCase().includes('walkin') || filters.keyword.toLowerCase().includes('walk-in')) ? 'bg-amber-500' : 'bg-gray-400/30'
+              }`}></div>
+              <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-lg transition-transform duration-200 ${
+                (filters.keyword.toLowerCase().includes('walkin') || filters.keyword.toLowerCase().includes('walk-in')) ? 'translate-x-5' : ''
+              }`}></div>
+            </div>
+          </label>
+        </div>
+
         {/* Source */}
         <div>
           <label className="block text-sm font-medium themed-text mb-1">Source</label>
@@ -113,6 +142,7 @@ const FilterSidebar = ({ filters, setFilters, onFilterSubmit }) => {
             <option value="Google Jobs">Google Jobs</option>
             <option value="LinkedIn">LinkedIn</option>
             <option value="Naukri">Naukri</option>
+            <option value="Adzuna">Adzuna</option>
           </select>
         </div>
 
