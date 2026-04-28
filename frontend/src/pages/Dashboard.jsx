@@ -17,6 +17,7 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [countdown, setCountdown] = useState(AUTO_REFRESH_SECONDS);
   const [newJobsFlash, setNewJobsFlash] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(new Date());
 
   // Initialize location filter from preferred location context
   const [filters, setFilters] = useState({
@@ -53,10 +54,11 @@ const Dashboard = () => {
       setJobs(prev => {
         if (silent && data.length !== prev.length) {
           setNewJobsFlash(true);
-          setTimeout(() => setNewJobsFlash(false), 2000);
+          setTimeout(() => setNewJobsFlash(false), 3000);
         }
         return data;
       });
+      setLastUpdated(new Date());
     } catch (err) {
       setError('Failed to load jobs. Please try again later.');
       console.error(err);
@@ -152,12 +154,22 @@ const Dashboard = () => {
                   </span>
                 )}
               </h1>
-              <p className="themed-text-muted mt-1 text-sm">
-                Showing {jobs.length} open position{jobs.length !== 1 ? 's' : ''}
-                {filters.location && (
-                  <span className="ml-1 font-medium" style={{ color: '#3b82f6' }}>in {filters.location}</span>
-                )}
-              </p>
+              <div className="flex items-center gap-3 mt-1">
+                <p className="themed-text-muted text-sm">
+                  Showing {jobs.length} open position{jobs.length !== 1 ? 's' : ''}
+                  {filters.location && (
+                    <span className="ml-1 font-medium" style={{ color: '#3b82f6' }}>in {filters.location}</span>
+                  )}
+                </p>
+                <span className="w-1 h-1 rounded-full bg-slate-400 opacity-30"></span>
+                <p className="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5" style={{ color: '#10b981' }}>
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  Live • Updated {Math.floor((new Date() - lastUpdated) / 1000)}s ago
+                </p>
+              </div>
             </div>
 
             <div className="flex items-center gap-2">
