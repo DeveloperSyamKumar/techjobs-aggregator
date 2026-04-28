@@ -102,15 +102,28 @@ def _parse_job_item(item: dict) -> JobCreate | None:
 async def fetch_jobs_from_api(
     query: str = "Software Developer",
     realtime: bool = False,
-    pages: int = 2,  # fetch N pages * 50 results = up to 100 jobs per query
+    pages: int = 2,
     location: str = "Hyderabad"
 ) -> List[JobCreate]:
+    """Fetch jobs from multiple sources (Adzuna + Google Jobs via SerpApi)."""
+    
+    # 1. Fetch from Adzuna
+    adzuna_jobs = await fetch_from_adzuna(query, realtime, pages, location)
+    
+    # 2. Fetch from Google Jobs (SerpApi)
+    serp_jobs = await fetch_from_serpapi(query, location)
+    
+    # Combine and return
+    return adzuna_jobs + serp_jobs
+
+
+async def fetch_from_adzuna(query, realtime, pages, location) -> List[JobCreate]:
     app_id = os.getenv("ADZUNA_APP_ID")
     app_key = os.getenv("ADZUNA_APP_KEY")
     
     if not app_id or not app_key:
-        logger.warning("ADZUNA credentials not found. Using MOCK data.")
-        return [JobCreate(**job) for job in MOCK_JOBS]
+        logger.warning("ADZUNA credentials not found.")
+        return []
 
     base_url = "https://api.adzuna.com/v1/api/jobs/in/search"
     base_params = {
@@ -123,36 +136,90 @@ async def fetch_jobs_from_api(
     }
     
     if realtime:
-        pages = 1  # When fetching every minute, 1 page of 50 is enough
+        pages = 1
 
-    all_jobs: List[JobCreate] = []
-
+    all_jobs = []
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
             for page in range(1, pages + 1):
-                logger.info(f"  Fetching Adzuna page {page} for '{query}'...")
                 response = await client.get(f"{base_url}/{page}", params=base_params)
                 response.raise_for_status()
                 data = response.json()
-
                 results = data.get("results", [])
-                if not results:
-                    logger.info(f"  No more results at page {page}, stopping.")
-                    break
-
                 for item in results:
                     job = _parse_job_item(item)
-                    if job:
-                        all_jobs.append(job)
-
-                logger.info(f"  Page {page}: got {len(results)} results (total so far: {len(all_jobs)})")
-
+                    if job: all_jobs.append(job)
+                if not results: break
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        logger.error(f"Error fetching from Adzuna API for '{query}': {e}")
-        if not all_jobs:
-            return [JobCreate(**job) for job in MOCK_JOBS]
-
+        logger.error(f"Adzuna error: {e}")
     return all_jobs
+
+
+async def fetch_from_serpapi(query: str, location: str) -> List[JobCreate]:
+    api_key = os.getenv("SERPAPI_KEY")
+    if not api_key:
+        logger.warning("SERPAPI_KEY not found. Skipping Google Jobs.")
+        return []
+
+    url = "https://serpapi.com/search.json"
+    params = {
+        "engine": "google_jobs",
+        "q": f"{query} in {location}",
+        "api_key": api_key,
+        "hl": "en",
+        "gl": "in"
+    }
+
+    all_jobs = []
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            logger.info(f"  Fetching Google Jobs (SerpApi) for '{query}'...")
+            response = await client.get(url, params=params)
+            response.raise_for_status()
+            data = response.json()
+            
+            jobs_results = data.get("jobs_results", [])
+            for item in jobs_results:
+                job = _parse_serpapi_item(item)
+                if job:
+                    all_jobs.append(job)
+            logger.info(f"  Google Jobs: got {len(all_jobs)} results")
+    except Exception as e:
+        logger.error(f"SerpApi error: {e}")
+    
+    return all_jobs
+
+
+def _parse_serpapi_item(item: dict) -> JobCreate | None:
+    """Parse a Google Jobs result from SerpApi."""
+    title = item.get("title", "Unknown Title")
+    company = item.get("company_name", "Confidential")
+    location = item.get("location", "Unknown")
+    
+    # Google Jobs usually provides multiple links, we take the first one
+    apply_options = item.get("apply_options", [])
+    apply_link = apply_options[0].get("link") if apply_options else None
+    
+    if not apply_link:
+        return None
+
+    # Walk-in Detection
+    description = item.get("description", "").lower()
+    t_lower = title.lower()
+    walkin_keywords = ["walk-in", "walkin", "walk in", "drive", "mega drive", "immediate joiner"]
+    is_walkin = any(x in t_lower or x in description for x in walkin_keywords)
+    
+    if is_walkin and "walk" not in t_lower:
+        title = f"Walk-in: {title}"
+
+    # Parse date (Google Jobs usually says "2 hours ago" etc.)
+    # For simplicity, we use current time if not easily parsable
+    return JobCreate(
+        title=title,
+        company=company,
+        location=location,
+        posted_date=datetime.utcnow(),
+        apply_link=apply_link,
+        source="Google Jobs"
+    )
 
