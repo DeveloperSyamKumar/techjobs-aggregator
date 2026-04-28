@@ -70,7 +70,12 @@ def _parse_job_item(item: dict) -> JobCreate | None:
     # Enhanced Walk-in Detection: Check title and description
     description = item.get("description", "").lower()
     t_lower = job_title.lower()
-    is_walkin = any(x in t_lower or x in description for x in ["walk-in", "walkin", "walk in", "drive"])
+    walkin_keywords = [
+        "walk-in", "walkin", "walk in", "drive", "mega drive", 
+        "hiring drive", "recruitment drive", "immediate joiner",
+        "direct interview", "interview drive"
+    ]
+    is_walkin = any(x in t_lower or x in description for x in walkin_keywords)
     
     if is_walkin and "walk" not in t_lower:
         job_title = f"Walk-in: {job_title}"

@@ -7,18 +7,19 @@ from services import api_service, job_service, alert_service
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-# High-volume Hyderabad-specific IT roles
+# High-volume Hyderabad-specific IT roles and Walk-ins
 JOB_QUERIES = [
-    "Software Engineer",
-    "IT Walk-in",
-    "Java Developer",
-    "Python Developer",
-    "Frontend Developer",
-    "Data Analyst",
-    "QA Tester",
-    "Full Stack Developer",
-    "Service Desk",
-    "DevOps"
+    "Software Engineer Hyderabad",
+    "IT Walk-in Hyderabad",
+    "Walk-in Interview Hyderabad",
+    "Direct Drive Hyderabad",
+    "Java Developer Hyderabad",
+    "Python Developer Hyderabad",
+    "Frontend Developer Hyderabad",
+    "Freshers Walk-in Hyderabad",
+    "BPO Walk-in Hyderabad",
+    "Service Desk Hyderabad",
+    "Mega Drive Hyderabad"
 ]
 
 CYCLE_A = JOB_QUERIES
