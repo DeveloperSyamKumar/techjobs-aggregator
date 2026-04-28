@@ -9,16 +9,18 @@ logging.basicConfig(level=logging.INFO)
 
 # High-volume Hyderabad-specific IT roles and Walk-ins
 JOB_QUERIES = [
-    "Software Engineer Hyderabad",
+    "Tech Mahindra Walk-in Hyderabad",
+    "Tech Mahindra Hyderabad",
+    "TCS Walk-in Hyderabad",
+    "Infosys Walk-in Hyderabad",
+    "Wipro Walk-in Hyderabad",
     "IT Walk-in Hyderabad",
     "Walk-in Interview Hyderabad",
     "Direct Drive Hyderabad",
+    "Software Engineer Hyderabad",
     "Java Developer Hyderabad",
-    "Python Developer Hyderabad",
-    "Frontend Developer Hyderabad",
     "Freshers Walk-in Hyderabad",
     "BPO Walk-in Hyderabad",
-    "Service Desk Hyderabad",
     "Mega Drive Hyderabad"
 ]
 
