@@ -24,13 +24,13 @@ JOB_QUERIES = [
 CYCLE_A = JOB_QUERIES
 CYCLE_B = []  # unused but kept for compatibility
 
-def fetch_and_store_jobs_a():
-    """Synchronous wrapper — Cycle A queries"""
-    asyncio.create_task(_async_fetch(CYCLE_A))
+async def fetch_and_store_jobs_a():
+    """Async Cycle A queries"""
+    await _async_fetch(CYCLE_A)
 
-def fetch_and_store_jobs_b():
-    """Synchronous wrapper — Cycle B queries"""
-    asyncio.create_task(_async_fetch(CYCLE_B))
+async def fetch_and_store_jobs_b():
+    """Async Cycle B queries"""
+    await _async_fetch(CYCLE_B)
 
 async def _async_fetch(queries: list):
     logger.info(f"Background Task: Fetching roles: {queries}")

@@ -20,7 +20,7 @@ import os
 FRONTEND_URL = os.getenv("FRONTEND_URL", "*")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL], # Restricted securely if defined in production
+    allow_origins=[FRONTEND_URL] if FRONTEND_URL != "*" else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -64,6 +64,17 @@ async def on_startup():
 def read_root():
     return {"message": "Welcome to the Job Aggregator API"}
 
+@app.get("/health")
+def health_check():
+    return {"status": "healthy", "environment": os.getenv("ENV", "development")}
+
 if __name__ == "__main__":
     is_prod = os.getenv("ENV") == "production"
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=not is_prod)
+    # Exclude jobs.db from being watched to prevent constant restarts
+    uvicorn.run(
+        "main:app", 
+        host="0.0.0.0", 
+        port=8000, 
+        reload=not is_prod,
+        reload_excludes=["jobs.db", "*/jobs.db", "database/jobs.db"]
+    )

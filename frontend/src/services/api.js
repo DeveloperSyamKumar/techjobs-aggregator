@@ -1,8 +1,14 @@
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api', // Match FastAPI prefix dynamically
+  baseURL: API_URL,
 });
+
+if (import.meta.env.DEV) {
+  console.log('API Base URL:', API_URL);
+}
 
 export const getJobs = async (params) => {
   const { data } = await api.get('/filter', { params });
