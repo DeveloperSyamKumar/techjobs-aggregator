@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Building2, Clock, CheckCircle, ExternalLink, BookmarkIcon, BookmarkCheck } from 'lucide-react';
+import { MapPin, Building2, Clock, CheckCircle, ExternalLink, BookmarkIcon, BookmarkCheck, Briefcase } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 const JobCard = ({ job }) => {
@@ -55,7 +55,7 @@ const JobCard = ({ job }) => {
         {/* Left side: Job Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between mb-2">
-            <h3 className="text-xl font-bold themed-text group-hover:text-primary transition-colors leading-tight truncate pr-4">
+            <h3 className="text-xl font-bold themed-text group-hover:text-primary transition-colors leading-tight pr-4">
               {job.title}
             </h3>
             <div className="flex gap-2 flex-shrink-0">
@@ -81,6 +81,12 @@ const JobCard = ({ job }) => {
               <MapPin size={18} className="mr-2" style={{ opacity: 0.6 }} />
               <span>{job.location || 'Location not specified'}</span>
             </div>
+            {job.experience && (
+              <div className="flex items-center">
+                <Briefcase size={18} className="mr-2" style={{ opacity: 0.6 }} />
+                <span className="font-medium" style={{ color: '#8b5cf6' }}>{job.experience}</span>
+              </div>
+            )}
             <div className="flex items-center">
               <Clock size={18} className="mr-2" style={{ opacity: 0.6 }} />
               <span>{timeAgo}</span>

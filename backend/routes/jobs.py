@@ -31,6 +31,7 @@ async def filter_jobs(
     days_ago: Optional[int] = Query(None, description="Filter for last X days"),
     source: Optional[str] = None,
     company: Optional[str] = None,
+    experience: Optional[str] = None,
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db)
@@ -63,6 +64,7 @@ async def filter_jobs(
         days_ago=days_ago, 
         source=source,
         company=company,
+        experience=experience,
         skip=skip, 
         limit=limit
     )

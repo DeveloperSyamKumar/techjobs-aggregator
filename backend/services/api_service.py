@@ -1,6 +1,7 @@
 import os
 import httpx
 import logging
+import re
 from datetime import datetime, timedelta
 from typing import List
 from schemas.job import JobCreate
@@ -52,6 +53,32 @@ MOCK_JOBS = [
 ]
 
 
+def extract_experience(description: str, title: str) -> str | None:
+    """Extract experience years from description or title using regex."""
+    text = f"{title} {description}".lower()
+    
+    # Pattern for "3-5 years", "3 to 5 years", "3+ years", etc.
+    patterns = [
+        r'(\d+)\s*-\s*(\d+)\s*years?',
+        r'(\d+)\s*to\s*(\d+)\s*years?',
+        r'(\d+)\s*\+?\s*years?',
+        r'exp(?:erience)?\s*(?:of|:)?\s*(\d+)\s*\+?\s*years?'
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, text)
+        if match:
+            if len(match.groups()) == 2 and match.group(1) and match.group(2):
+                return f"{match.group(1)}-{match.group(2)} Years"
+            return f"{match.group(1)}+ Years"
+            
+    # Freshers check
+    if any(x in text for x in ['fresher', '0 years', 'no experience']):
+        return "0-1 Years"
+        
+    return None
+
+
 def _parse_job_item(item: dict) -> JobCreate | None:
     """Parse a single Adzuna job result into a JobCreate schema."""
     job_title = item.get("title", "Unknown Title")
@@ -89,12 +116,16 @@ def _parse_job_item(item: dict) -> JobCreate | None:
     except Exception:
         posted_date = datetime.utcnow()
 
+    # Extract Experience
+    experience = extract_experience(description, job_title)
+
     return JobCreate(
         title=job_title,
         company=company,
         location=location,
         posted_date=posted_date,
         apply_link=apply_link,
+        experience=experience,
         source=source_portal
     )
 
@@ -212,6 +243,9 @@ def _parse_serpapi_item(item: dict) -> JobCreate | None:
     if is_walkin and "walk" not in t_lower:
         title = f"Walk-in: {title}"
 
+    # Extract Experience
+    experience = extract_experience(description, title)
+
     # Parse date (Google Jobs usually says "2 hours ago" etc.)
     # For simplicity, we use current time if not easily parsable
     return JobCreate(
@@ -220,6 +254,7 @@ def _parse_serpapi_item(item: dict) -> JobCreate | None:
         location=location,
         posted_date=datetime.utcnow(),
         apply_link=apply_link,
+        experience=experience,
         source="Google Jobs"
     )
 

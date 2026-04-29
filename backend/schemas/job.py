@@ -8,6 +8,7 @@ class JobBase(BaseModel):
     location: Optional[str] = None
     posted_date: datetime
     apply_link: Optional[str] = None
+    experience: Optional[str] = None
     source: str
 
 class JobCreate(JobBase):

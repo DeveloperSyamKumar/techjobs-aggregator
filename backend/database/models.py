@@ -11,6 +11,7 @@ class Job(Base):
     location = Column(String, index=True, nullable=True)
     posted_date = Column(DateTime, default=datetime.utcnow)
     apply_link = Column(String, nullable=True)
+    experience = Column(String, index=True, nullable=True)
     source = Column(String, index=True, nullable=False)
 
     __table_args__ = (

@@ -25,6 +25,7 @@ const Dashboard = () => {
     location: preferredLocation,
     source: '',
     company: '',
+    experience: '',
     days_ago: ''
   });
   const [companies, setCompanies] = useState([]);
@@ -136,11 +137,15 @@ const Dashboard = () => {
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-8">
         {/* Sidebar */}
-        <FilterSidebar
-          filters={filters}
-          setFilters={setFilters}
-          onFilterSubmit={() => { fetchJobsData(); setCountdown(AUTO_REFRESH_SECONDS); }}
-        />
+        <div className="lg:w-80 lg:flex-shrink-0">
+          <div className="lg:sticky lg:top-24">
+            <FilterSidebar
+              filters={filters}
+              setFilters={setFilters}
+              onFilterSubmit={() => { fetchJobsData(); setCountdown(AUTO_REFRESH_SECONDS); }}
+            />
+          </div>
+        </div>
 
         {/* Main Content */}
         <div className="flex-1 min-w-0 flex flex-col">
@@ -210,7 +215,7 @@ const Dashboard = () => {
               <h3 className="text-lg font-bold themed-text mb-1">No jobs found</h3>
               <p className="themed-text-muted max-w-sm mx-auto mb-6">We couldn't find any positions matching your criteria. Try adjusting your filters.</p>
               <button onClick={() => {
-                const cleared = { keyword: '', location: '', source: '', company: '', days_ago: '' };
+                const cleared = { keyword: '', location: '', source: '', company: '', experience: '', days_ago: '' };
                 setFilters(cleared);
                 setNavbarSearch('');
                 fetchJobsData(false, cleared);

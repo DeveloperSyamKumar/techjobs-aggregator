@@ -39,6 +39,7 @@ def fetch_jobs(
     days_ago: Optional[int] = None,
     source: Optional[str] = None,
     company: Optional[str] = None,
+    experience: Optional[str] = None,
     skip: int = 0,
     limit: int = 100
 ):
@@ -53,6 +54,12 @@ def fetch_jobs(
         query = query.filter(models.Job.source.ilike(f"%{source}%"))
     if company:
         query = query.filter(models.Job.company.ilike(f"%{company}%"))
+    if experience:
+        if experience == "5+":
+            # Match 5+, 6+, 7+, 8+, 9+, 10+ etc.
+            query = query.filter(models.Job.experience.ilike("5+ %") | models.Job.experience.ilike("6+ %") | models.Job.experience.ilike("7+ %") | models.Job.experience.ilike("8+ %") | models.Job.experience.ilike("9+ %") | models.Job.experience.ilike("1%"))
+        else:
+            query = query.filter(models.Job.experience.ilike(f"%{experience}%"))
     if days_ago:
         date_threshold = datetime.utcnow() - timedelta(days=days_ago)
         query = query.filter(models.Job.posted_date >= date_threshold)

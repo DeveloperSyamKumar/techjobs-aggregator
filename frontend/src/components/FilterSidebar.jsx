@@ -16,7 +16,7 @@ const FilterSidebar = ({ filters, setFilters, onFilterSubmit }) => {
   };
 
   const clearFilters = () => {
-    setFilters({ keyword: '', location: '', source: '', company: '', days_ago: '' });
+    setFilters({ keyword: '', location: '', source: '', company: '', experience: '', days_ago: '' });
     setTimeout(onFilterSubmit, 0);
   };
 
@@ -97,6 +97,23 @@ const FilterSidebar = ({ filters, setFilters, onFilterSubmit }) => {
             <option value="3">Last 3 days</option>
             <option value="7">Last 7 days</option>
             <option value="30">Last 30 days</option>
+          </select>
+        </div>
+        
+        {/* Experience */}
+        <div>
+          <label className="block text-sm font-medium themed-text mb-1">Experience</label>
+          <select
+            name="experience"
+            value={filters.experience}
+            onChange={handleChange}
+            className="input-field"
+          >
+            <option value="">Any Experience</option>
+            <option value="0-1">0-1 Years (Freshers)</option>
+            <option value="1-3">1-3 Years</option>
+            <option value="3-5">3-5 Years</option>
+            <option value="5+">5+ Years</option>
           </select>
         </div>
 
