@@ -191,10 +191,22 @@ const FilterSidebar = ({ filters, setFilters, onFilterSubmit }) => {
 
       {/* Sidebar Container */}
       <div className={`
-        fixed inset-y-0 left-0 transform ${isOpen ? 'translate-x-0 pt-16 mt-2 pb-6 px-4' : '-translate-x-full'}
-        lg:relative lg:translate-x-0 w-80 lg:w-72 xl:w-80 flex-shrink-0 z-40 transition-transform duration-300 ease-in-out lg:z-auto
+        fixed inset-y-0 left-0 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+        lg:relative lg:translate-x-0 w-[85%] sm:w-80 lg:w-72 xl:w-80 flex-shrink-0 z-50 lg:z-auto transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1)
       `}>
-        {SidebarContent}
+        <div className="h-full themed-surface lg:bg-transparent lg:border-none shadow-2xl lg:shadow-none">
+          <div className="lg:hidden p-6 flex justify-between items-center border-b themed-border">
+            <h2 className="text-xl font-bold themed-text flex items-center">
+              <Filter size={20} className="mr-2 text-blue-600" /> Filters
+            </h2>
+            <button onClick={() => setIsOpen(false)} className="p-2 rounded-xl themed-surface-alt themed-text transition-colors hover:bg-red-500/10 hover:text-red-500">
+              <X size={20} />
+            </button>
+          </div>
+          <div className="px-4 lg:px-0 h-[calc(100%-5rem)] lg:h-auto overflow-y-auto lg:overflow-visible py-6 lg:py-0">
+            {SidebarContent}
+          </div>
+        </div>
       </div>
     </>
   );

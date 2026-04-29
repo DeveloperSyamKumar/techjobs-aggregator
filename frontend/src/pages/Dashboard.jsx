@@ -160,10 +160,12 @@ const Dashboard = () => {
                 )}
               </h1>
               <div className="flex items-center gap-3 mt-1">
-                <p className="themed-text-muted text-sm">
-                  Showing {jobs.length} open position{jobs.length !== 1 ? 's' : ''}
+                <p className="themed-text-muted text-sm flex items-center gap-2">
+                  <span className="font-bold text-blue-600 dark:text-blue-400">{jobs.length}</span> positions found
                   {filters.location && (
-                    <span className="ml-1 font-medium" style={{ color: '#3b82f6' }}>in {filters.location}</span>
+                    <span className="flex items-center gap-1 bg-blue-500/10 text-blue-600 px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider">
+                      <MapPin size={10} /> {filters.location}
+                    </span>
                   )}
                 </p>
                 <span className="w-1 h-1 rounded-full bg-slate-400 opacity-30"></span>

@@ -50,74 +50,81 @@ const JobCard = ({ job }) => {
   }
 
   return (
-    <div className="card-container p-6 relative group transition-all">
-      <div className="flex flex-col md:flex-row gap-6">
+    <div className="card-container p-5 md:p-6 relative group animate-fade-in transition-all">
+      <div className="flex flex-col md:flex-row gap-5 md:gap-8">
         {/* Left side: Job Info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between mb-2">
-            <h3 className="text-xl font-bold themed-text group-hover:text-primary transition-colors leading-tight pr-4">
+          <div className="flex items-start justify-between mb-3">
+            <h3 className="text-lg md:text-xl font-bold themed-text group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight pr-4">
               {job.title}
             </h3>
             <div className="flex gap-2 flex-shrink-0">
               {isFresh && !isApplied && (
-                <span className="text-xs font-bold px-2.5 py-1 rounded-full shadow-sm" style={{ backgroundColor: 'rgba(249, 115, 22, 0.15)', color: '#f97316' }}>
+                <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-lg shadow-sm bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">
                   🔥 Fresh
-                </span>
-              )}
-              {isApplied && (
-                <span className="text-xs font-bold px-2.5 py-1 rounded-full flex items-center shadow-sm" style={{ backgroundColor: 'rgba(34, 197, 94, 0.15)', color: '#22c55e' }}>
-                  <CheckCircle size={12} className="mr-1" /> Applied
                 </span>
               )}
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-y-2 gap-x-6 text-sm themed-text-muted mb-4">
-            <div className="flex items-center">
-              <Building2 size={18} className="mr-2" style={{ opacity: 0.6 }} />
-              <span className="font-semibold themed-text">{job.company}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap items-center gap-y-3 gap-x-8 text-sm themed-text-muted mb-5">
+            <div className="flex items-center group/meta">
+              <div className="w-8 h-8 rounded-lg themed-surface-alt flex items-center justify-center mr-3 group-hover/meta:bg-blue-600/10 transition-colors">
+                <Building2 size={16} className="text-slate-400 group-hover/meta:text-blue-600" />
+              </div>
+              <span className="font-semibold themed-text truncate">{job.company}</span>
             </div>
-            <div className="flex items-center">
-              <MapPin size={18} className="mr-2" style={{ opacity: 0.6 }} />
-              <span>{job.location || 'Location not specified'}</span>
+            <div className="flex items-center group/meta">
+              <div className="w-8 h-8 rounded-lg themed-surface-alt flex items-center justify-center mr-3 group-hover/meta:bg-blue-600/10 transition-colors">
+                <MapPin size={16} className="text-slate-400 group-hover/meta:text-blue-600" />
+              </div>
+              <span className="truncate">{job.location || 'Remote'}</span>
             </div>
             {job.experience && (
-              <div className="flex items-center">
-                <Briefcase size={18} className="mr-2" style={{ opacity: 0.6 }} />
-                <span className="font-medium" style={{ color: '#8b5cf6' }}>{job.experience}</span>
+              <div className="flex items-center group/meta">
+                <div className="w-8 h-8 rounded-lg themed-surface-alt flex items-center justify-center mr-3 group-hover/meta:bg-purple-600/10 transition-colors">
+                  <Briefcase size={16} className="text-slate-400 group-hover/meta:text-purple-600" />
+                </div>
+                <span className="font-bold text-purple-600 dark:text-purple-400">{job.experience}</span>
               </div>
             )}
-            <div className="flex items-center">
-              <Clock size={18} className="mr-2" style={{ opacity: 0.6 }} />
+            <div className="flex items-center group/meta">
+              <div className="w-8 h-8 rounded-lg themed-surface-alt flex items-center justify-center mr-3 group-hover/meta:bg-emerald-600/10 transition-colors">
+                <Clock size={16} className="text-slate-400 group-hover/meta:text-emerald-600" />
+              </div>
               <span>{timeAgo}</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+          <div className="flex items-center gap-4">
+            <span className="inline-flex items-center px-3 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-blue-500/10 text-blue-600 border border-blue-500/20">
               {job.source}
             </span>
+            {isApplied && (
+              <span className="text-xs font-bold flex items-center text-emerald-600 bg-emerald-500/10 px-3 py-1 rounded-lg border border-emerald-500/20">
+                <CheckCircle size={14} className="mr-1.5" /> Applied
+              </span>
+            )}
             {isSaved && (
-              <span className="text-xs font-medium flex items-center" style={{ color: '#10b981' }}>
-                <BookmarkCheck size={14} className="mr-1" /> Saved
+              <span className="text-xs font-bold flex items-center text-blue-600 bg-blue-500/10 px-3 py-1 rounded-lg border border-blue-500/20">
+                <BookmarkCheck size={14} className="mr-1.5" /> Saved
               </span>
             )}
           </div>
         </div>
 
         {/* Right side: Actions */}
-        <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-4 md:border-l md:pl-6 themed-border min-w-[160px]">
+        <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-4 md:border-l md:pl-8 themed-border min-w-full md:min-w-[180px]">
           <button 
             onClick={toggleSave} 
-            className="p-2 rounded-lg border transition-all"
+            className="p-3 rounded-xl border transition-all duration-300 hover:scale-110 active:scale-90"
             style={{
               backgroundColor: isSaved ? 'rgba(59, 130, 246, 0.1)' : 'var(--color-surface-alt)',
-              borderColor: isSaved ? 'rgba(59, 130, 246, 0.3)' : 'var(--color-border)',
+              borderColor: isSaved ? 'rgba(59, 130, 246, 0.3)' : 'transparent',
               color: isSaved ? '#3b82f6' : 'var(--color-text-muted)'
             }}
-            title={isSaved ? "Unsave Job" : "Save Job"}
           >
-            {isSaved ? <BookmarkCheck fill="currentColor" size={22} /> : <BookmarkIcon size={22} />}
+            {isSaved ? <BookmarkCheck fill="currentColor" size={24} /> : <BookmarkIcon size={24} />}
           </button>
           
           <a 
@@ -125,15 +132,12 @@ const JobCard = ({ job }) => {
             target="_blank" 
             rel="noopener noreferrer"
             onClick={markApplied}
-            className="flex-1 md:w-full py-2.5 px-6 rounded-lg font-bold text-sm flex items-center justify-center transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-            style={{
-              backgroundColor: isApplied ? 'var(--color-surface-alt)' : '#3b82f6',
-              color: isApplied ? 'var(--color-text-muted)' : 'white',
-              boxShadow: isApplied ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-            }}
+            className={`flex-1 md:w-full py-3 px-6 rounded-xl font-bold text-sm flex items-center justify-center transition-all shadow-lg active:scale-95 ${
+              isApplied ? 'bg-slate-100 text-slate-500 dark:bg-slate-800' : 'bg-blue-600 text-white hover:bg-blue-500 shadow-blue-500/20 hover:shadow-blue-500/40'
+            }`}
           >
             {isApplied ? 'Applied' : 'Apply Now'}
-            <ExternalLink size={16} className="ml-2" />
+            {!isApplied && <ExternalLink size={16} className="ml-2" />}
           </a>
         </div>
       </div>

@@ -58,23 +58,21 @@ const Navbar = ({ onRefresh, isRefreshing, countdown, searchQuery, onSearch }) =
   const progress = circumference - (countdown / 60) * circumference;
 
   return (
-    <nav className="themed-nav sticky top-0 z-30 shadow-sm">
+    <nav className="glass-effect sticky top-0 z-40 shadow-sm transition-all duration-300">
       <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '0 1.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', height: '4rem', gap: '1rem' }}>
 
           {/* Logo */}
-          <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+          <div className="flex-shrink-0 flex items-center">
             <div
-              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', transition: 'transform 0.2s' }}
+              className="flex items-center gap-3 cursor-pointer group"
               onClick={() => navigate('/')}
-              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
-              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
             >
-              <div style={{ background: '#3b82f6', padding: '0.5rem', borderRadius: '0.5rem' }}>
-                <Briefcase size={24} color="white" />
+              <div className="bg-blue-600 p-2 rounded-xl shadow-lg shadow-blue-600/20 group-hover:scale-110 transition-transform duration-300">
+                <Briefcase size={22} color="white" />
               </div>
-              <span className="themed-text" style={{ fontWeight: 700, fontSize: '1.25rem', letterSpacing: '-0.025em' }}>
-                Tech<span style={{ color: '#3b82f6' }}>Jobs</span>Aggregator
+              <span className="themed-text text-lg font-bold tracking-tight hidden sm:block">
+                Tech<span className="text-blue-600">Jobs</span>Aggregator
               </span>
             </div>
           </div>
