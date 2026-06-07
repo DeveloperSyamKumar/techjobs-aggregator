@@ -49,15 +49,58 @@ def fetch_jobs(
         # simple case-insensitive search
         query = query.filter(models.Job.title.ilike(f"%{keyword}%") | models.Job.company.ilike(f"%{keyword}%"))
     if location:
-        query = query.filter(models.Job.location.ilike(f"%{location}%"))
+        loc_lower = location.lower()
+        if "bengaluru" in loc_lower or "bangalore" in loc_lower:
+            query = query.filter(models.Job.location.ilike("%bengaluru%") | models.Job.location.ilike("%bangalore%"))
+        elif "gurugram" in loc_lower or "gurgaon" in loc_lower:
+            query = query.filter(models.Job.location.ilike("%gurugram%") | models.Job.location.ilike("%gurgaon%"))
+        else:
+            query = query.filter(models.Job.location.ilike(f"%{location}%"))
     if source:
         query = query.filter(models.Job.source.ilike(f"%{source}%"))
     if company:
         query = query.filter(models.Job.company.ilike(f"%{company}%"))
     if experience:
         if experience == "5+":
-            # Match 5+, 6+, 7+, 8+, 9+, 10+ etc.
-            query = query.filter(models.Job.experience.ilike("5+ %") | models.Job.experience.ilike("6+ %") | models.Job.experience.ilike("7+ %") | models.Job.experience.ilike("8+ %") | models.Job.experience.ilike("9+ %") | models.Job.experience.ilike("1%"))
+            # Match single digits 5-9 and common double digit patterns
+            query = query.filter(
+                models.Job.experience.ilike("5+%") | 
+                models.Job.experience.ilike("6+%") | 
+                models.Job.experience.ilike("7+%") | 
+                models.Job.experience.ilike("8+%") | 
+                models.Job.experience.ilike("9+%") |
+                models.Job.experience.ilike("5-%") | 
+                models.Job.experience.ilike("6-%") | 
+                models.Job.experience.ilike("7-%") | 
+                models.Job.experience.ilike("8-%") | 
+                models.Job.experience.ilike("9-%") |
+                models.Job.experience.ilike("10%") |
+                models.Job.experience.ilike("11%") |
+                models.Job.experience.ilike("12%") |
+                models.Job.experience.ilike("13%") |
+                models.Job.experience.ilike("14%") |
+                models.Job.experience.ilike("15%") |
+                models.Job.experience.ilike("20%") |
+                models.Job.experience.ilike("25%")
+            )
+        elif experience == "0-1":
+            query = query.filter(models.Job.experience.ilike("%0-1%") | models.Job.experience.ilike("%fresher%"))
+        elif experience == "1-3":
+            query = query.filter(
+                models.Job.experience.ilike("%1-2%") | 
+                models.Job.experience.ilike("%1-3%") | 
+                models.Job.experience.ilike("%2-3%") |
+                models.Job.experience.ilike("1+%") |
+                models.Job.experience.ilike("2+%")
+            )
+        elif experience == "3-5":
+            query = query.filter(
+                models.Job.experience.ilike("%3-4%") | 
+                models.Job.experience.ilike("%3-5%") | 
+                models.Job.experience.ilike("%4-5%") |
+                models.Job.experience.ilike("3+%") |
+                models.Job.experience.ilike("4+%")
+            )
         else:
             query = query.filter(models.Job.experience.ilike(f"%{experience}%"))
     if days_ago:

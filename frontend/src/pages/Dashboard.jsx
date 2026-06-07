@@ -3,7 +3,7 @@ import Navbar from '../components/Navbar';
 import FilterSidebar from '../components/FilterSidebar';
 import JobCard from '../components/JobCard';
 import { getJobs, triggerRefresh, getCompanies } from '../services/api';
-import { LayoutGrid, AlertCircle, Loader2, Sparkles } from 'lucide-react';
+import { LayoutGrid, AlertCircle, Loader2, Sparkles, Briefcase, Filter, Bell, Search, MapPin } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 const AUTO_REFRESH_SECONDS = 60;
@@ -17,6 +17,7 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [countdown, setCountdown] = useState(AUTO_REFRESH_SECONDS);
   const [newJobsFlash, setNewJobsFlash] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(new Date());
 
   // Initialize location filter from preferred location context
@@ -136,19 +137,45 @@ const Dashboard = () => {
       />
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-8">
-        {/* Sidebar */}
-        <div className="lg:w-80 lg:flex-shrink-0">
+        {/* Sidebar - Hidden on mobile, shown on desktop */}
+        <div className="hidden lg:block lg:w-80 lg:flex-shrink-0">
           <div className="lg:sticky lg:top-24">
             <FilterSidebar
               filters={filters}
               setFilters={setFilters}
               onFilterSubmit={() => { fetchJobsData(); setCountdown(AUTO_REFRESH_SECONDS); }}
+              isOpen={isFilterOpen}
+              setIsOpen={setIsFilterOpen}
             />
           </div>
         </div>
 
+        {/* Mobile Filter Drawer */}
+        <div className="lg:hidden">
+          <FilterSidebar
+            filters={filters}
+            setFilters={setFilters}
+            onFilterSubmit={() => { fetchJobsData(); setCountdown(AUTO_REFRESH_SECONDS); setIsFilterOpen(false); }}
+            isOpen={isFilterOpen}
+            setIsOpen={setIsFilterOpen}
+          />
+        </div>
+
         {/* Main Content */}
         <div className="flex-1 min-w-0 flex flex-col">
+          {/* Mobile Hero Search - Prominent at the top */}
+          <div className="lg:hidden w-full mb-8">
+            <div className="relative group">
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-blue-600 transition-transform group-focus-within:scale-110" size={24} />
+              <input
+                type="text"
+                placeholder="Search jobs, skills, or companies..."
+                className="w-full bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-[2rem] py-5 pl-14 pr-6 text-lg themed-text shadow-2xl shadow-blue-500/10 outline-none focus:border-blue-500 transition-all placeholder:text-slate-400 font-medium"
+                value={navbarSearch}
+                onChange={(e) => handleNavbarSearch(e.target.value)}
+              />
+            </div>
+          </div>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 gap-4">
             <div>
               <h1 className="text-2xl font-bold themed-text flex items-center gap-2">
@@ -289,6 +316,42 @@ const Dashboard = () => {
           )}
         </div>
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 glass-effect border-t themed-border px-8 py-4 flex justify-between items-center shadow-[0_-10px_30px_rgba(0,0,0,0.08)]">
+        <button 
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="flex flex-col items-center gap-1.5 text-slate-400 hover:text-blue-600 transition-all active:scale-90"
+        >
+          <Briefcase size={24} />
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Latest</span>
+        </button>
+        <button 
+          onClick={() => setIsFilterOpen(true)}
+          className="flex flex-col items-center gap-1.5 text-slate-400 hover:text-blue-600 transition-all active:scale-90"
+        >
+          <div className="relative">
+            <Filter size={24} />
+            {Object.values(filters).some(v => v !== '') && (
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-600 rounded-full border-2 themed-surface"></span>
+            )}
+          </div>
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Filter</span>
+        </button>
+        <button 
+          onClick={() => navigate('/alerts')}
+          className="flex flex-col items-center gap-1.5 text-slate-400 hover:text-blue-600 transition-all active:scale-90"
+        >
+          <div className="relative">
+            <Bell size={24} />
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 themed-surface"></span>
+          </div>
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Alerts</span>
+        </button>
+      </div>
+
+      {/* Add padding at the bottom for mobile */}
+      <div className="lg:hidden h-24"></div>
     </div>
   );
 };

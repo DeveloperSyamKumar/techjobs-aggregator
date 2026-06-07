@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Briefcase, RefreshCw, Bell, Search, X,
-  Moon, Sun, MapPin, Check
+  Moon, Sun, MapPin, Check, Loader2
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getAlertsCount } from '../services/api';
@@ -10,12 +10,31 @@ import { useApp } from '../context/AppContext';
 const Navbar = ({ onRefresh, isRefreshing, countdown, searchQuery, onSearch }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { darkMode, toggleDarkMode, preferredLocation, setPreferredLocation } = useApp();
+  const { darkMode, toggleDarkMode, preferredLocation, setPreferredLocation, detectLocation } = useApp();
 
   const [alertCount, setAlertCount] = useState(0);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [locationInput, setLocationInput] = useState(preferredLocation);
+  const [detecting, setDetecting] = useState(false);
   const locationRef = useRef(null);
+
+  const handleAutoDetect = async () => {
+    setDetecting(true);
+    try {
+      const city = await detectLocation(true);
+      if (city) {
+        setLocationInput(city);
+        setPreferredLocation(city);
+      } else {
+        alert("Could not detect location. Please enter it manually.");
+      }
+    } catch (error) {
+      console.error("Auto-detect failed:", error);
+      alert("Error detecting location.");
+    } finally {
+      setDetecting(false);
+    }
+  };
 
   useEffect(() => {
     const fetchCount = () => getAlertsCount().then(setAlertCount).catch(() => {});
@@ -77,22 +96,22 @@ const Navbar = ({ onRefresh, isRefreshing, countdown, searchQuery, onSearch }) =
             </div>
           </div>
 
-          {/* Live Search */}
+          {/* Live Search - Hidden on mobile, shown on desktop */}
           {!isOnAlerts && onSearch && (
-            <div style={{ flex: 1, maxWidth: '36rem', position: 'relative' }}>
-              <Search size={16} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-subtle)', pointerEvents: 'none' }} />
+            <div className="hidden lg:block flex-1 max-w-[36rem] relative">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               <input
                 id="navbar-search"
                 type="text"
                 value={searchQuery || ''}
                 onChange={e => onSearch(e.target.value)}
                 placeholder="Search jobs by title, skill, company…"
-                className="search-input"
+                className="input-field pl-10 pr-10"
               />
               {searchQuery && (
                 <button
                   onClick={() => onSearch('')}
-                  style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-subtle)', display: 'flex', alignItems: 'center' }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                 >
                   <X size={15} />
                 </button>
@@ -152,6 +171,35 @@ const Navbar = ({ onRefresh, isRefreshing, countdown, searchQuery, onSearch }) =
                       style={{ paddingLeft: '1.75rem', paddingRight: '0.75rem' }}
                     />
                   </div>
+                  <button
+                    type="button"
+                    onClick={handleAutoDetect}
+                    disabled={detecting}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.375rem',
+                      padding: '0.375rem 0.5rem',
+                      borderRadius: '0.5rem',
+                      border: '1px dashed var(--color-border)',
+                      background: 'var(--color-surface-alt)',
+                      color: '#3b82f6',
+                      fontSize: '0.75rem',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      marginBottom: '0.5rem'
+                    }}
+                  >
+                    {detecting ? (
+                      <Loader2 size={12} className="animate-spin" />
+                    ) : (
+                      <MapPin size={12} />
+                    )}
+                    {detecting ? 'Detecting...' : 'Auto-detect current location'}
+                  </button>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     {preferredLocation && (
                       <button

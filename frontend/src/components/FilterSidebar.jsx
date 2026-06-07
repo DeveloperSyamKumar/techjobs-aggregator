@@ -1,8 +1,27 @@
 import React, { useState } from 'react';
-import { Filter, X, Search, Building2, Sparkles } from 'lucide-react';
+import { Filter, X, Search, Building2, Sparkles, MapPin, Loader2 } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
-const FilterSidebar = ({ filters, setFilters, onFilterSubmit }) => {
-  const [isOpen, setIsOpen] = useState(false);
+const FilterSidebar = ({ filters, setFilters, onFilterSubmit, isOpen, setIsOpen }) => {
+  const { detectLocation } = useApp();
+  const [detecting, setDetecting] = useState(false);
+
+  const handleAutoDetect = async () => {
+    setDetecting(true);
+    try {
+      const city = await detectLocation(true);
+      if (city) {
+        setFilters(prev => ({ ...prev, location: city }));
+      } else {
+        alert("Could not detect location. Please enter it manually.");
+      }
+    } catch (error) {
+      console.error("Auto-detect failed:", error);
+      alert("Error detecting location.");
+    } finally {
+      setDetecting(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -73,14 +92,29 @@ const FilterSidebar = ({ filters, setFilters, onFilterSubmit }) => {
         {/* Location */}
         <div>
           <label className="block text-sm font-medium themed-text mb-1">Location</label>
-          <input
-            type="text"
-            name="location"
-            value={filters.location}
-            onChange={handleChange}
-            placeholder="e.g. Hyderabad, Remote"
-            className="input-field"
-          />
+          <div className="relative flex items-center">
+            <input
+              type="text"
+              name="location"
+              value={filters.location}
+              onChange={handleChange}
+              placeholder="e.g. Hyderabad, Remote"
+              className="input-field pr-10"
+            />
+            <button
+              type="button"
+              onClick={handleAutoDetect}
+              className="absolute right-3 text-blue-500 hover:text-blue-600 transition-colors disabled:opacity-50"
+              title="Auto-detect Location"
+              disabled={detecting}
+            >
+              {detecting ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <MapPin size={16} className="hover:scale-110 transition-transform" />
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Date Posted */}
@@ -172,19 +206,10 @@ const FilterSidebar = ({ filters, setFilters, onFilterSubmit }) => {
 
   return (
     <>
-      {/* Mobile Toggle */}
-      <button
-        className="lg:hidden fixed bottom-6 right-6 p-4 text-white rounded-full shadow-lg z-50 transition-all active:scale-95"
-        style={{ backgroundColor: '#3b82f6' }}
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        {isOpen ? <X size={24} /> : <Filter size={24} />}
-      </button>
-
       {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300"
           onClick={() => setIsOpen(false)}
         />
       )}

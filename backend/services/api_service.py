@@ -8,50 +8,6 @@ from schemas.job import JobCreate
 
 logger = logging.getLogger(__name__)
 
-# Fallback mock data when no API key is present
-MOCK_JOBS = [
-    {
-        "title": "QA Tester",
-        "company": "Tech Mahindra",
-        "location": "Hyderabad, Telangana",
-        "posted_date": datetime.utcnow() - timedelta(hours=2),
-        "apply_link": "https://www.linkedin.com/jobs/search/?keywords=QA+Tester",
-        "source": "LinkedIn"
-    },
-    {
-        "title": "Software Testing Engineer",
-        "company": "TCS",
-        "location": "Hyderabad, Telangana",
-        "posted_date": datetime.utcnow() - timedelta(days=1),
-        "apply_link": "https://www.naukri.com/software-testing-engineer-jobs",
-        "source": "Naukri"
-    },
-    {
-        "title": "Senior QA Automation",
-        "company": "Infosys",
-        "location": "Remote",
-        "posted_date": datetime.utcnow() - timedelta(hours=5),
-        "apply_link": "https://www.google.com/about/careers/applications/jobs/results/?q=QA",
-        "source": "Google Jobs"
-    },
-    {
-        "title": "Software Test Engineer - Freshers",
-        "company": "Wipro",
-        "location": "Hyderabad, Telangana",
-        "posted_date": datetime.utcnow() - timedelta(days=3),
-        "apply_link": "https://www.linkedin.com/jobs/search/?keywords=Software+Test+Engineer",
-        "source": "LinkedIn"
-    },
-    {
-        "title": "Manual Tester",
-        "company": "Capgemini",
-        "location": "Pune, Maharashtra",
-        "posted_date": datetime.utcnow() - timedelta(minutes=30),
-        "apply_link": "https://www.naukri.com/manual-tester-jobs",
-        "source": "Naukri"
-    }
-]
-
 
 def extract_experience(description: str, title: str) -> str | None:
     """Extract experience years from description or title using regex."""
